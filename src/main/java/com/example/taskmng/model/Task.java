@@ -41,7 +41,10 @@ public class Task{
     // Getters and setters
     public void setId(long id){
         this.id = id;
-    }    
+    }   
+    public Long getId(){
+        return id;
+    }
     
     public String getTitre(){
         return titre;
