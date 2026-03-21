@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +16,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.BDDMockito.given;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.*;   
 
 import com.example.taskmng.repository.TaskRepository;
 import com.example.taskmng.service.TaskService;
@@ -34,15 +37,15 @@ class TaskServiceTest {
     // Task exists
     @Test
     void getTaskById_ShouldReturnTask_WhenTaskExists(){
-        // Arrange
+        // Arrange (Given)
         Long taskId = 1L;
         Task mockTask = new Task(taskId, "Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
         given(taskRepository.findTaskById(taskId)).willReturn(Optional.of(mockTask));
         
-        // Act 
+        // Act (When)
         Task result = taskService.getTaskById(taskId);
         
-        // Assert
+        // Assert (Then)
         assertEquals("Task 1", result.getTitre());
     }
     
@@ -87,6 +90,20 @@ class TaskServiceTest {
         
         // Assert
         assertEquals(result.getTitre(), mockTask.getTitre());
+    }
+    
+    // Delete task
+    @Test
+    void deleteTask_ShouldNotReturn_TheDeletedTask(){
+        // Given
+        Task mockTask = new Task(1L, "Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
+        doNothing().when(taskRepository).deleteById(mockTask.getId());
+        
+        // When 
+        taskService.deleteTask(mockTask.getId());
+        
+        // Then
+        verify(taskRepository, times(1)).deleteById(mockTask.getId());
     }
     
 	
