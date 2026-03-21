@@ -1,15 +1,12 @@
 package com.example.taskmng.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import java.util.Date;
+import java.time.LocalDate;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-
-enum Statut {
-    TODO, IN_PROGRESS, DONE
-}
 
 @Entity
 public class Task{
@@ -19,8 +16,27 @@ public class Task{
     
     private String titre;
     private String description;
-    private Date date_echeance;
+    
+    @Column(name = "date_echeance")
+    private LocalDate dateEcheance;
     private Statut statut;
+    
+    // Constructor
+    public Task(Long id, String titre, String description, LocalDate dateEcheance, Statut statut){
+        this.id = id;
+        this.titre = titre;
+        this.description = description;
+        this.dateEcheance = dateEcheance;
+        this.statut = statut;
+    }
+    public Task(String titre, String description, LocalDate dateEcheance, Statut statut){
+        this.titre = titre;
+        this.description = description;
+        this.dateEcheance = dateEcheance;
+        this.statut = statut;
+    }
+    
+    
     
     // Getters and setters
     public void setId(long id){
@@ -41,17 +57,17 @@ public class Task{
         this.description = description;
     }
     
-    public Date getDateEcheance(){
-        return date_echeance;
+    public LocalDate getDateEcheance(){
+        return dateEcheance;
     }
-    public void setTitre(Date date_echeance){
-        this.date_echeance = date_echeance;
+    public void setDateEcheance(LocalDate dateEcheance){
+        this.dateEcheance = dateEcheance;
     }
     
-    public Statut setStatut(){
+    public Statut getStatut(){
         return statut;
     }
-    public void setTitre(Statut statut){
+    public void setStatut(Statut statut){
         this.statut = statut;
     }
     

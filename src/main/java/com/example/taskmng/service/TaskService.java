@@ -3,13 +3,13 @@ import com.example.taskmng.model.Task;
 import com.example.taskmng.repository.TaskRepository;
 
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-
+    
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+
+import com.example.taskmng.exception.custom.ResourceNotFoundException;
 
 @Service
 public class TaskService {
@@ -23,12 +23,13 @@ public class TaskService {
     }
     
     // Get task by id
-    public Optional<Task> getTaskById(long id){
-        return taskRepository.findTaskById(id);
+    public Task getTaskById(long id){
+        return taskRepository.findTaskById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Tache non trouvée"));
     }
     
     // Create a new task
-    public Task createNewTaslk(Task task){
+    public Task createNewTask(Task task){
         return taskRepository.save(task);
     }
     

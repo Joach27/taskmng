@@ -7,10 +7,11 @@ import org.springframework.data.domain.Page;
 
 import com.example.taskmng.service.TaskService;
 import com.example.taskmng.model.Task;
-import java.util.Optional;
+
+import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 public class TaskController{
     @Autowired
     private TaskService taskService;
@@ -22,14 +23,16 @@ public class TaskController{
     }
     
     @GetMapping("/task/{id}")
-    public Optional<Task> getTaskById(@PathVariable long id){
+    public Task getTaskById(@PathVariable long id){
         return taskService.getTaskById(id);
     }
     
     // Create a new task
     @PostMapping
     public Task createNewTask(@RequestBody Task task){
-        return taskService.createNewTaslk(task);
+        if (task.getTitre() != null && task.getDateEcheance().isAfter(LocalDate.now())){
+            return taskService.createNewTask(task);            
+        }else throw new IllegalArgumentException("Titre ou date non valide");
     }
     
     // Update task
