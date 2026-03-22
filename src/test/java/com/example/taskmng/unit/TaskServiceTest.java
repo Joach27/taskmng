@@ -1,6 +1,7 @@
 package com.example.taskmng.unit;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,11 @@ import com.example.taskmng.service.TaskService;
 import com.example.taskmng.model.Statut;
 import com.example.taskmng.model.Task;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -34,13 +40,30 @@ class TaskServiceTest {
     @InjectMocks
     private TaskService taskService;
     
+    // Return all pages of tasks
+    @Test
+    void getAllTasks_ShouldReturnPagesofTasks() {
+        // Arrange (Given)
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Task> tasks = List.of(new Task(), new Task());
+        Page<Task> mockPageOfTasks = new PageImpl<>(tasks, pageable, tasks.size());
+        given(taskRepository.findAll(pageable)).willReturn(mockPageOfTasks);
+        
+        // Act
+        Page<Task> result = taskService.getAllTask(0, 10);
+        
+        // Assert
+        assertEquals(2, result.getContent().size());
+        verify(taskRepository).findAll(pageable);
+    }
+    
     // Task exists
     @Test
     void getTaskById_ShouldReturnTask_WhenTaskExists(){
         // Arrange (Given)
         Long taskId = 1L;
         Task mockTask = new Task(taskId, "Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
-        given(taskRepository.findTaskById(taskId)).willReturn(Optional.of(mockTask));
+        given(taskRepository.findById(taskId)).willReturn(Optional.of(mockTask));
         
         // Act (When)
         Task result = taskService.getTaskById(taskId);
@@ -54,7 +77,7 @@ class TaskServiceTest {
     void getTaskById_ShouldTrowException_WhenTaskDoesNotExists(){
         // Arrange 
         Long taskId = 999L;
-        given(taskRepository.findTaskById(taskId)).willReturn(Optional.empty());
+        given(taskRepository.findById(taskId)).willReturn(Optional.empty());
         
         // Act && Assert
         assertThrows(RuntimeException.class, () -> taskService.getTaskById(taskId)); 

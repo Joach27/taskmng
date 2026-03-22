@@ -18,12 +18,12 @@ public class TaskController{
     
     // Lister toutes les taches avec pagination
     @GetMapping("/tasks")
-    public Page<Task> getAllTasks(int page, int size){
+    public Page<Task> getAllTasks(@RequestParam int page, @RequestParam int size){
         return taskService.getAllTask(page, size);
     }
     
     @GetMapping("/task/{id}")
-    public Task getTaskById(@PathVariable long id){
+    public Task getTaskById(@PathVariable Long id){
         return taskService.getTaskById(id);
     }
     
@@ -37,12 +37,12 @@ public class TaskController{
     
     // Update task
     @PutMapping("/task/{id}") 
-    public Task updateTask(@RequestParam long id, @RequestBody Task task){
+    public Task updateTask(@PathVariable Long id, @RequestBody Task task){
         return taskService.updateTask(id, task);
     }
     
     @DeleteMapping("/task/{id}")
-    public void deleteTask(long id){
+    public void deleteTask(@PathVariable Long id){
         taskService.deleteTask(id);
     }
 }

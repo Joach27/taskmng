@@ -35,6 +35,12 @@ public class Task{
         this.dateEcheance = dateEcheance;
         this.statut = statut;
     }
+    public Task(){
+        this.titre = "Default title";
+        this.description = "Default description";
+        this.dateEcheance = LocalDate.now();
+        this.statut = Statut.TODO;
+    }
     
     
     

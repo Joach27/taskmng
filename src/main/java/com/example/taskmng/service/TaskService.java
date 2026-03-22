@@ -23,24 +23,24 @@ public class TaskService {
     }
     
     // Get task by id
-    public Task getTaskById(long id){
-        return taskRepository.findTaskById(id)
+    public Task getTaskById(Long id){
+        return taskRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Tache non trouvée"));
     }
     
     // Create a new task
-    public Task createNewTask(Task task){
+    public Task createNewTask(Task task){ 
         return taskRepository.save(task);
     }
     
     // Update task
-    public Task updateTask(long id, Task task){
+    public Task updateTask(Long id, Task task){
         task.setId(id);
         return taskRepository.save(task);
     }
     
     // Delete task
-    public void deleteTask(long id){
+    public void deleteTask(Long id){
         taskRepository.deleteById(id);
     }
 }
