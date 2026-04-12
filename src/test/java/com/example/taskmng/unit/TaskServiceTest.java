@@ -22,8 +22,11 @@ import static org.mockito.Mockito.*;
 
 import com.example.taskmng.repository.TaskRepository;
 import com.example.taskmng.service.TaskService;
+import com.example.taskmng.exception.custom.ResourceNotFoundException;
 import com.example.taskmng.model.Statut;
 import com.example.taskmng.model.Task;
+import com.example.taskmng.mapper.*;
+import com.example.taskmng.dto.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -40,20 +43,36 @@ class TaskServiceTest {
     @InjectMocks
     private TaskService taskService;
     
+    @Mock
+    private TaskMapper mapper;
+    
     // Return all pages of tasks
     @Test
     void getAllTasks_ShouldReturnPagesofTasks() {
         // Arrange (Given)
         Pageable pageable = PageRequest.of(0, 10);
-        List<Task> tasks = List.of(new Task(), new Task());
+        
+        Task task1 = new Task("Task 1", "Desc 1", LocalDate.now(), Statut.TODO);
+        Task task2 = new Task("Task 2", "Desc 2", LocalDate.now(), Statut.DONE);
+        
+        List<Task> tasks = List.of(task1, task2);
         Page<Task> mockPageOfTasks = new PageImpl<>(tasks, pageable, tasks.size());
+        
+        TaskResponse response1 = new TaskResponse("Task 1", "Desc 1", LocalDate.now(), Statut.TODO);
+        TaskResponse response2 = new TaskResponse("Task 2", "Desc 2", LocalDate.now(), Statut.DONE);
+
         given(taskRepository.findAll(pageable)).willReturn(mockPageOfTasks);
+        given(mapper.toResponse(task1)).willReturn(response1);
+        given(mapper.toResponse(task2)).willReturn(response2);
         
         // Act
-        Page<Task> result = taskService.getAllTask(0, 10);
+        Page<TaskResponse> result = taskService.getAllTask(0, 10);
         
         // Assert
         assertEquals(2, result.getContent().size());
+        assertEquals("Task 1", result.getContent().get(0).getTitre());
+        assertEquals("Task 2", result.getContent().get(1).getTitre());
+        
         verify(taskRepository).findAll(pageable);
     }
     
@@ -62,11 +81,15 @@ class TaskServiceTest {
     void getTaskById_ShouldReturnTask_WhenTaskExists(){
         // Arrange (Given)
         Long taskId = 1L;
+        
         Task mockTask = new Task(taskId, "Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
+        TaskResponse taskResponse = new TaskResponse(taskId, "Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
+        
+        given(mapper.toResponse(mockTask)).willReturn(taskResponse);
         given(taskRepository.findById(taskId)).willReturn(Optional.of(mockTask));
         
         // Act (When)
-        Task result = taskService.getTaskById(taskId);
+        TaskResponse result = taskService.getTaskById(taskId);
         
         // Assert (Then)
         assertEquals("Task 1", result.getTitre());
@@ -87,11 +110,26 @@ class TaskServiceTest {
     @Test
     void createNewTask_ShouldSucced(){
         // Arrange
-        Task mockTask = new Task("Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
-        given(taskRepository.save(mockTask)).willReturn(mockTask);
+        Task task = new Task("Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
+        TaskRequest request = new TaskRequest(
+            "Task 1",
+            "Do it before tomorrow",
+            LocalDate.parse("2026-03-31"),
+            Statut.TODO
+        );
+    
+        TaskResponse expectedResponse = new TaskResponse(
+            "Task 1",
+            "Do it before tomorrow",
+            LocalDate.parse("2026-03-31"),
+            Statut.TODO
+        );
+        given(taskRepository.save(task)).willReturn(task);
+        given(mapper.toEntity(request)).willReturn(task);
+        given(mapper.toResponse(task)).willReturn(expectedResponse);
         
         // Act
-        Task result = taskService.createNewTask(mockTask);
+        TaskResponse result = taskService.createNewTask(request);
         
         // Assert
         assertThat(result, notNullValue());
@@ -103,16 +141,64 @@ class TaskServiceTest {
     void updateTask_ShouldReturnTask_WithUpdatedFields(){
         // Arrange
         Long taskId = 1L;
-        Task mockTask = new Task(taskId, "Task 1", "Do it before tomorrow", LocalDate.parse("2026-03-31"), Statut.TODO);
-        String newTitle = "Task 1.1";
-        mockTask.setTitre(newTitle);
-        given(taskRepository.save(mockTask)).willReturn(mockTask);
- 
+        Task existingTask = new Task(
+            "Task ancien",
+            "Old description",
+            LocalDate.parse("2026-03-30"),
+            Statut.TODO
+        );
+    
+        TaskRequest updatedRequest = new TaskRequest(
+            "Task nouveau",
+            "Do it before tomorrow nouveau",
+            LocalDate.parse("2026-03-31"),
+            Statut.TODO
+        );
+    
+        TaskResponse expectedResponse = new TaskResponse(
+            "Task nouveau",
+            "Do it before tomorrow nouveau",
+            LocalDate.parse("2026-03-31"),
+            Statut.TODO
+        );
+        
+        given(taskRepository.findById(taskId)).willReturn(Optional.of(existingTask));
+        given(taskRepository.save(any(Task.class))).willReturn(existingTask);
+        given(mapper.toResponse(existingTask)).willReturn(expectedResponse);
+        
         // Act
-        Task result = taskService.updateTask(taskId, mockTask);
+        TaskResponse response = taskService.updateTask(taskId, updatedRequest);
         
         // Assert
-        assertEquals(result.getTitre(), mockTask.getTitre());
+        assertEquals(("Task nouveau"), response.getTitre());
+        assertEquals("Do it before tomorrow nouveau", response.getDescription());
+        
+        verify(taskRepository).findById(taskId);
+        verify(taskRepository).save(any(Task.class));
+    }
+    
+
+    // Should throw error when task not found 
+    @Test
+    void shouldThrowError_WhenTaskNotFound(){
+        // Given
+        Long id = 999L;
+        TaskRequest updatedTask = new TaskRequest(
+            "Task ancien",
+            "Old description",
+            LocalDate.parse("2026-03-30"),
+            Statut.TODO
+        );
+        
+        given(taskRepository.findById(id)).willReturn(Optional.empty());
+        
+        // when && then
+        assertThrows(ResourceNotFoundException.class, () -> {
+            taskService.updateTask(id, updatedTask);
+        });
+        
+        verify(taskRepository).findById(id);
+        verify(taskRepository, never()).save(any());
     }
     
     // Delete task

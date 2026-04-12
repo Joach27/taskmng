@@ -1,48 +1,37 @@
-package com.example.taskmng.model;
+package com.example.taskmng.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import java.time.LocalDate;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import com.example.taskmng.model.Statut;
 
-@Entity
-public class Task{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class TaskResponse {
     private Long id;
-    
     private String titre;
     private String description;
-    
-    @Column(name = "date_echeance")
     private LocalDate dateEcheance;
     private Statut statut;
     
-    // Constructor
-    public Task(Long id, String titre, String description, LocalDate dateEcheance, Statut statut){
+    // CONSTRUCTORS
+    // Constructeur vide (obligatoire pour frameworks comme Jackson)
+    public TaskResponse() {
+    }
+
+    // Constructeur sans id
+    public TaskResponse(String titre, String description, LocalDate dateEcheance, Statut statut) {
+        this.titre = titre;
+        this.description = description;
+        this.dateEcheance = dateEcheance;
+        this.statut = statut;
+    }
+
+    // Constructeur complet
+    public TaskResponse(Long id, String titre, String description, LocalDate dateEcheance, Statut statut) {
         this.id = id;
         this.titre = titre;
         this.description = description;
         this.dateEcheance = dateEcheance;
         this.statut = statut;
     }
-    public Task(String titre, String description, LocalDate dateEcheance, Statut statut){
-        this.titre = titre;
-        this.description = description;
-        this.dateEcheance = dateEcheance;
-        this.statut = statut;
-    }
-    public Task(){
-        this.titre = "Default title";
-        this.description = "Default description";
-        this.dateEcheance = LocalDate.now();
-        this.statut = Statut.TODO;
-    }
-    
-    
     
     // Getters and setters
     public void setId(Long id){
@@ -79,5 +68,4 @@ public class Task{
     public void setStatut(Statut statut){
         this.statut = statut;
     }
-    
 }

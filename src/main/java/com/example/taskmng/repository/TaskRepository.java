@@ -11,6 +11,5 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long>{
     List<Task> findByTitre(String titre);
-    
     List<Task> findByStatut(Statut statut);
 } 
