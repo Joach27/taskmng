@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 
 import com.example.taskmng.service.TaskService;
 import com.example.taskmng.dto.TaskRequest;
@@ -24,9 +25,10 @@ public class TaskController{
         return taskService.getAllTask(page, size);
     }
     
-    @GetMapping("/task/{id}")
-    public TaskResponse getTaskById(@PathVariable Long id){
-        return taskService.getTaskById(id);
+    @GetMapping("/tasks/{id}")
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id){
+        TaskResponse response = taskService.getTaskById(id);
+        return ResponseEntity.ok(response);
     }
     
     // Create a new task
@@ -36,12 +38,12 @@ public class TaskController{
     }
     
     // Update task
-    @PutMapping("/task/{id}") 
+    @PutMapping("/tasks/{id}") 
     public TaskResponse updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest){
         return taskService.updateTask(id, taskRequest);
     }
     
-    @DeleteMapping("/task/{id}")
+    @DeleteMapping("/tasks/{id}")
     public void deleteTask(@PathVariable Long id){
         taskService.deleteTask(id);
     }

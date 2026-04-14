@@ -17,6 +17,7 @@ import com.example.taskmng.mapper.TaskMapper;
 
 
 @Service
+@Transactional(readOnly = true)
 public class TaskService {
     @Autowired
     private TaskRepository taskRepository ;
@@ -43,6 +44,7 @@ public class TaskService {
     }
     
     // Create a new task
+    @Transactional
     public TaskResponse createNewTask(TaskRequest request){
         Task task = mapper.toEntity(request);
         taskRepository.save(task);
@@ -67,6 +69,7 @@ public class TaskService {
     }
     
     // Delete task
+    @Transactional
     public void deleteTask(Long id){
         taskRepository.deleteById(id);
     }
